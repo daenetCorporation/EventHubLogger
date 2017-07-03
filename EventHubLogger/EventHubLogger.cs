@@ -2,39 +2,61 @@
 using System.Text;
 using Microsoft.Azure.EventHubs;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging.Internal;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.EventHub
 {
     public class EventHubLogger : ILogger
     {
-        private readonly string m_EventHubName;
-        private readonly string m_HostName;
-        private readonly string m_SasToken;
-        private readonly string m_SubSystem;
+        //private readonly string m_EventHubName;
+        //private readonly string m_HostName;
+        //private readonly string m_SasToken;
+        //private readonly string m_SubSystem;
 
         private IEventHubLoggerSettings m_Settings;
         private Func<string, LogLevel, bool> m_Filter;
-        private bool m_IncludeScopes;
+        //private bool m_IncludeScopes;
         private string m_CategoryName;
 
         private EventHubClient m_EventHubClient;
         private EventHubLogScopeManager m_ScopeManager;
 
-        public Func<LogLevel, EventId, string, Exception, EventData> EventDataFormatter { get; set; }
+        /// <summary>
+        /// List of key value pairs, which will be logged with every message.
+        /// </summary>
+        private Dictionary<string, object> m_AdditionalValues;
+
+        public Func<LogLevel, EventId, object, Exception, EventData> EventDataFormatter { get; set; }
 
         #region Public Methods
 
-        public EventHubLogger(IEventHubLoggerSettings settings, string categoryName, Func<string, LogLevel, bool> filter = null, Func<LogLevel, EventId, string, Exception, EventData> eventDataFormatter = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="categoryName"></param>
+        /// <param name="filter"></param>
+        /// <param name="eventDataFormatter"></param>
+        /// <param name="additionalValues">List of key value pairs, which will be logged with every message.</param>
+        public EventHubLogger(IEventHubLoggerSettings settings,
+            string categoryName, Func<string, LogLevel, bool> filter = null,
+            Func<LogLevel, EventId, object, Exception, EventData> eventDataFormatter = null,
+            Dictionary<string, object> additionalValues = null)
         {
             if (filter == null)
                 m_Filter = filter ?? ((category, logLevel) => true);
             else
                 m_Filter = filter;
 
+            this.m_AdditionalValues = additionalValues;
+
             m_Settings = settings;
+
             m_CategoryName = categoryName;
 
-            EventDataFormatter = EventDataFormatter == null ? defaultEventFormatter : eventDataFormatter;
+            EventDataFormatter = eventDataFormatter == null ? defaultEventFormatter : eventDataFormatter;
 
             m_EventHubClient = EventHubClient.CreateFromConnectionString(m_Settings.ConnectionString);
 
@@ -50,7 +72,9 @@ namespace Microsoft.Extensions.Logging.EventHub
                 return;
             }
 
-            EventData ehEvent = EventDataFormatter(logLevel, eventId, state.ToString(), exception);
+            EventData ehEvent = EventDataFormatter(logLevel, eventId, state, exception);
+
+            //Debug.WriteLine($">>{JsonConvert.SerializeObject(ehEvent)}");
 
             m_EventHubClient.SendAsync(ehEvent).Wait();
         }
@@ -89,29 +113,48 @@ namespace Microsoft.Extensions.Logging.EventHub
         /// <param name="message"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        private EventData defaultEventFormatter(LogLevel logLevel, EventId eventId, string message, Exception exception)
+        private EventData defaultEventFormatter(LogLevel logLevel, EventId eventId, object state, Exception exception)
         {
-            var obj = new
+            System.Dynamic.ExpandoObject expando = new System.Dynamic.ExpandoObject();
+            var data = (System.Collections.Generic.IDictionary<String, Object>)expando;
+
+            data.Add("Name", m_CategoryName);
+            data.Add("Scope", m_ScopeManager == null ? null : m_ScopeManager.Current);
+            data.Add("EventId", eventId.ToString());
+            data.Add("Message", state.ToString());
+            data.Add("Level", logLevel);
+            data.Add("LocalEnqueuedTime", DateTime.Now.ToString("O"));
+            data.Add("Exception", exception == null ? null : new
             {
-                Name = m_CategoryName,
-                Scope = m_ScopeManager == null ? null : m_ScopeManager.Current,
-                EventId = eventId.ToString(),
-                Message = message,
-                Level = logLevel,
-                LocalEnqueuedTime = DateTime.Now.ToString("O"),
-                Exception = exception == null ? null : new
+                Message = exception.Message,
+                Type = exception.GetType().Name,
+                StackTrace = exception.StackTrace
+            });
+
+            if (this.m_AdditionalValues != null)
+            {
+                foreach (var item in this.m_AdditionalValues)
                 {
-                    Message = exception.Message,
-                    Type = exception.GetType().Name,
-                    StackTrace = exception.StackTrace
+                    data.Add(item.Key, item.Value);
                 }
-            };
+            }
 
-            var payload = JsonConvert.SerializeObject(obj);
+            if (state is FormattedLogValues)
+            {
+                FormattedLogValues v = state as FormattedLogValues;
+                foreach (var item in v)
+                {
+                    data.Add(item.Key, item.Value);
+                }
+            }
 
-            EventData data = new EventData(Encoding.UTF8.GetBytes(payload));
+            var payload = JsonConvert.SerializeObject(data);
 
-            return data;
+            EventData eventData = new EventData(Encoding.UTF8.GetBytes(payload));
+
+            System.Diagnostics.Debug.WriteLine(payload);
+
+            return eventData;
         }
 
         #endregion
