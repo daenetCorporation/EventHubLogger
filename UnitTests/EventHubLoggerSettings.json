@@ -4,7 +4,7 @@
     "Daenet.Common.EventHubLogger.UnitTests": 0
   },
   "EventHub": {
-    "ConnectionString": "TODO",
+    "ConnectionString": "",
     "IncludeExceptionStackTrace": false,
     "RetryPolicy": 0
   }

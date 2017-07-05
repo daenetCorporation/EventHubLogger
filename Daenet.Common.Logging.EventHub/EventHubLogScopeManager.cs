@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Logging.EventHub
+namespace Daenet.Common.Logging.EventHub
 {
     /// <summary>
     /// Handles scopes.

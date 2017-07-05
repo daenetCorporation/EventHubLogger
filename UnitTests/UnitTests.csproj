@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventHubLogger\EventHubLogger.csproj" />
+    <ProjectReference Include="..\Daenet.Common.Logging.EventHub\Daenet.Common.Logging.EventHub.csproj" />
   </ItemGroup>
 
 </Project>

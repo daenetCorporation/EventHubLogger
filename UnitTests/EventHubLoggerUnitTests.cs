@@ -1,13 +1,12 @@
+using Daenet.Common.Logging.EventHub;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging.EventHub;
-using Microsoft.Extensions.FileProviders;
 
-namespace Daenet.Common.EventHubLogger.UnitTests
+namespace Daenet.Common.Logging.EventHub.UnitTests
 {
     [TestClass]
     public class EventHubLoggerUnitTests
