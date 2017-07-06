@@ -17,7 +17,7 @@ Install-Package Daenet.Common.Logging.EventHub
            Dictionary<string, object> additionalValues = null)
         {
             ConfigurationBuilder cfgBuilder = new ConfigurationBuilder();
-            cfgBuilder.AddJsonFile(@"EventHubLoggerSettings.json");
+            cfgBuilder.AddJsonFile("EventHubLoggerSettings.json");
             var configRoot = cfgBuilder.Build();
 
             ILoggerFactory loggerFactory = new LoggerFactory()
