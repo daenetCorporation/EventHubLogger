@@ -5,7 +5,7 @@ Implementation of .netcore ILogger for Azure Event Hub
 
 **First**, install the Daenet.Common.Logging.EventHub [NuGet Package](https://www.nuget.org/packages/Daenet.Common.Logging.EventHub) into your application.
 
-```JSON 
+```C#
 Install-Package Daenet.Common.Logging.EventHub
 ``` 
 ### Configuration
