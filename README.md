@@ -23,3 +23,16 @@ Implementation of .netcore ILogger for Azure Event Hub
         }
  ```
    Following configuration needs to be added in the ***EventHubLogger>settings.json*** file.
+   ```JSON
+   {
+	"IncludeScopes": true,
+  "Switches": {
+    "Daenet.Common.EventHubLogger.UnitTests": 0
+  },
+  "EventHub": {
+    "ConnectionString": "",
+    "IncludeExceptionStackTrace": false,
+    "RetryPolicy": 0
+  }
+}
+```
