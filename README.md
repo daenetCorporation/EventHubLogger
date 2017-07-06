@@ -30,7 +30,7 @@ Implementation of .netcore ILogger for Azure Event Hub
     "Daenet.Common.EventHubLogger.UnitTests": 0
   },
   "EventHub": {
-    "ConnectionString": "",
+    "ConnectionString": "EventHub Connection String",
     "IncludeExceptionStackTrace": false,
     "RetryPolicy": 0
   }
