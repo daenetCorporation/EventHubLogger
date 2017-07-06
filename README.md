@@ -21,5 +21,6 @@ Implementation of .netcore ILogger for Azure Event Hub
 
             m_Logger = loggerFactory.CreateLogger<EventHubLoggerUnitTests>();
         }
-        ```
+``````´´´
+        
         Following configuration needs to be added in the ***EventHubLoggerSettings.json*** file. 
