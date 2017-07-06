@@ -1,9 +1,6 @@
 # EventHubLogger
 Implementation of .netcore ILogger for Azure Event Hub
 
-### Installation 
-**Install** the Daenet.Common.Logging.EventHub [NuGet Package](http:// "Link missing") in your application.
-
 ### Configuration
 
 **Following code block**, shows how to add EventHubLogger provider to the loggerFactory in EventHubLoggerUnitTests class:
