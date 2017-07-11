@@ -1,7 +1,7 @@
 {
 	"IncludeScopes": true,
   "Switches": {
-    "Daenet.Common.EventHubLogger.UnitTests": 0
+    "Daenet.Common.Logging.EventHub.UnitTests.EventHubLoggerUnitTests": 0
   },
   "EventHub": {
     "ConnectionString": "",
