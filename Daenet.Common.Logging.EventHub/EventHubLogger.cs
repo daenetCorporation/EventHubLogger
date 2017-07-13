@@ -131,21 +131,22 @@ namespace Daenet.Common.Logging.EventHub
                 StackTrace = exception.StackTrace
             });
 
-            if (this.m_AdditionalValues != null)
+            if (m_AdditionalValues != null && m_AdditionalValues.Count > 0)
             {
-                foreach (var item in this.m_AdditionalValues)
-                {
-                    data.Add(item.Key, item.Value);
-                }
+                data.Add("AdditionalValues", m_AdditionalValues);
             }
 
             if (state is FormattedLogValues)
             {
-                FormattedLogValues v = state as FormattedLogValues;
-                foreach (var item in v)
+                FormattedLogValues values = (FormattedLogValues)state;
+
+                var formattedLogValues = new Dictionary<string, object>();
+                foreach (var item in values)
                 {
-                    data.Add(item.Key, item.Value);
+                    formattedLogValues.Add(item.Key, item.Value);
                 }
+
+                data.Add("FormattedLogValues", formattedLogValues);
             }
 
             var payload = JsonConvert.SerializeObject(data);
