@@ -42,7 +42,8 @@ Install-Package Daenet.Common.Logging.EventHub
 ```
 Your log output would look like:
  ```JSON
-  "Name": "Daenet.Common.EventHubLogger.UnitTests.EventHubLoggerUnitTests",
+ "body": {
+      "Name": "Daenet.Common.EventHubLogger.UnitTests.EventHubLoggerUnitTests",
       "Scope": null,
       "EventId": "0",
       "Message": "Test Warning Log Message",
@@ -50,5 +51,6 @@ Your log output would look like:
       "LocalEnqueuedTime": "2017-07-04T17:32:46.3321255+02:00",
       "Exception": null,
       "{OriginalFormat}": "Test Warning Log Message"
+    }
  ```
 
