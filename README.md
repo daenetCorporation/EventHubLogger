@@ -1,8 +1,6 @@
 # EventHubLogger
 Implementation of .netcore ILogger for Azure Event Hub
 
-The current version of EventHubLogger is built for ASP.NET Core 2.0-preview2-final.
-
 ## Installation
 
 **First**, install the Daenet.Common.Logging.EventHub [NuGet Package](https://www.nuget.org/packages/Daenet.Common.Logging.EventHub) into your application.
