@@ -25,6 +25,9 @@ namespace Daenet.Common.Logging.EventHub
         {
             get
             {
+                if (m_AsyncSopes.Value == null)
+                    m_AsyncSopes.Value = new List<DisposableScope>();
+
                 StringBuilder sb = new StringBuilder(); 
                 foreach (var item in m_AsyncSopes.Value)
                 {

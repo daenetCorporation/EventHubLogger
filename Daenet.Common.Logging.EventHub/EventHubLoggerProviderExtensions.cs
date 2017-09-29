@@ -6,12 +6,32 @@ using System.Text;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
 
 namespace Daenet.Common.Logging.EventHub
 {
     public static class EventHubLoggerProviderExtensions
     {
         #region Public Methods
+
+   
+
+        public static IEventHubLoggerSettings GetEventHubLoggerSettings(this IConfiguration config)
+        {
+            EventHubLoggerSettings settings = new EventHubLoggerSettings();
+
+            settings.IncludeScopes = config.GetValue<bool>("IncludeScopes");
+            config.GetSection("Switches").Bind(settings.Switches);
+
+            settings.ConnectionString = config.GetSection("EventHub").GetValue<string>("ConnectionString");
+            settings.IncludeExceptionStackTrace = config.GetSection("EventHub").GetValue<bool>("IncludeExceptionStackTrace");
+            settings.RetryPolicy = getRetryPolicy(config.GetSection("EventHub").GetValue<int>("RetryPolicy"));
+
+            return settings;
+        }
+
 
         /// <summary>
         /// Add EventHub with no filter
@@ -34,23 +54,105 @@ namespace Daenet.Common.Logging.EventHub
             //if (filter == null)
             //    filter = (n, l) => l >= LogLevel.Information;
 
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             loggerFactory.AddProvider(new EventHubLoggerProvider(settings, filter, eventDataFormatter, additionalValues));
 
             return loggerFactory;
         }
 
-        public static IEventHubLoggerSettings GetEventHubLoggerSettings(this IConfiguration config)
+
+        /// <summary>
+        /// Add EventHub with no filter.
+        /// </summary>
+        /// <param name="loggingBuilder">builder</param>
+        /// <param name="settings"></param>
+        /// <param name="filter">Optional filter function, which implements the filter logic.</param>
+        /// <param name="eventDataFormatter"></param>
+        /// <param name="additionalValues"></param>
+        /// <param name="providerName"></param>
+        /// <remarks>If filter function is specified, all possibly defined switches will be ignored.</remarks>
+        /// <returns></returns>
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder,
+            IEventHubLoggerSettings settings,
+            Func<string, LogLevel, bool> filter = null,
+            Func<LogLevel, EventId, object, Exception, EventData> eventDataFormatter = null,
+           Dictionary<string, object> additionalValues = null,
+            string providerName = "")
         {
-            EventHubLoggerSettings settings = new EventHubLoggerSettings();
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
 
-            settings.IncludeScopes = config.GetValue<bool>("IncludeScopes");
-            config.GetSection("Switches").Bind(settings.Switches);
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(settings, filter, eventDataFormatter, additionalValues));
 
-            settings.ConnectionString = config.GetSection("EventHub").GetValue<string>("ConnectionString");
-            settings.IncludeExceptionStackTrace = config.GetSection("EventHub").GetValue<bool>("IncludeExceptionStackTrace");
-            settings.RetryPolicy = getRetryPolicy(config.GetSection("EventHub").GetValue<int>("RetryPolicy"));
+            return loggingBuilder;
+        }
 
-            return settings;
+
+
+        /// <summary>
+        /// Adds the logger to the factory.
+        /// </summary>
+        /// <param name="loggingBuilder"></param>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, IEventHubLoggerSettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            loggingBuilder.Services.AddSingleton<ILoggerProvider>(new EventHubLoggerProvider(settings));
+
+            return loggingBuilder;
+        }
+
+
+
+        /// <summary>
+        /// Adds the logger to the factory.
+        /// </summary>
+        /// <param name="loggingBuilder"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<IEventHubLoggerSettings> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+           
+            loggingBuilder.Services.AddSingleton<ILoggerProvider, EventHubLoggerProvider>();
+           
+            return loggingBuilder;
+        }
+
+
+       
+        /// <summary>
+        /// Creates the default instance of EventHub logger provider, when no configuration is specified.
+        /// </summary>
+        /// <param name="loggingBuilder">builder.</param>
+        /// <param name="connStr">Connection string of EventHub.</param>
+        /// <returns></returns>
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, string connStr)
+        {
+            EventHubLoggerSettings settings = new EventHubLoggerSettings()
+            {
+                 ConnectionString = connStr,
+            };
+
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(settings));
+
+            return loggingBuilder;
         }
 
         #endregion
