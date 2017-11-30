@@ -1,0 +1,11 @@
+{
+	"IncludeScopes": true,
+  "Switches": {
+    "Daenet.Common.Logging.EventHub.UnitTests.EventHubLoggerUnitTests": 0
+  },
+  "EventHub": {
+    "ConnectionString": "",
+    "IncludeExceptionStackTrace": false,
+    "RetryPolicy": 0
+  }
+}

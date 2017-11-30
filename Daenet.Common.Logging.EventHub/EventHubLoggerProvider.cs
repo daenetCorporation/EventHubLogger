@@ -22,7 +22,7 @@ namespace Daenet.Common.Logging.EventHub
 
         private Func<LogLevel, EventId, object, Exception, EventData> m_EventDataFormatter;
 
-        public EventHubLoggerProvider(IEventHubLoggerSettings settings, Func<string, LogLevel, bool> filter, Func<LogLevel, EventId, object, Exception, EventData> eventDataFormatter = null, Dictionary<string, object> additionalValues = null)
+        public EventHubLoggerProvider(IEventHubLoggerSettings settings, Func<string, LogLevel, bool> filter = null, Func<LogLevel, EventId, object, Exception, EventData> eventDataFormatter = null, Dictionary<string, object> additionalValues = null)
         {
             this.m_EventDataFormatter = eventDataFormatter;
             this.m_AdditionalValues = additionalValues;

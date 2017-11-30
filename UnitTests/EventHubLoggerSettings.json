@@ -1,11 +1,15 @@
 {
-	"IncludeScopes": true,
-  "Switches": {
-    "Daenet.Common.Logging.EventHub.UnitTests.EventHubLoggerUnitTests": 0
-  },
-  "EventHub": {
-    "ConnectionString": "",
-    "IncludeExceptionStackTrace": false,
-    "RetryPolicy": 0
+  "Logging": {
+    "IncludeScopes": "true",
+    "LogLevel": {
+      "Default": "Debug",
+      "EventHubLoggerUnitTests": "Verbose",
+      "Microsoft": "Information"
+    },
+    "EventHub": {
+      "ConnectionString": "",
+      "IncludeExceptionStackTrace": false,
+      "RetryPolicy": 0
+    }
   }
 }
