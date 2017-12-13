@@ -4,9 +4,11 @@ using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Daenet.Common.Logging.EventHub
 {
+    [ProviderAlias("EventHub")]
     public class EventHubLoggerProvider : ILoggerProvider
     {
         private readonly ConcurrentDictionary<string, EventHubLogger> m_Loggers = new ConcurrentDictionary<string, EventHubLogger>();
@@ -26,8 +28,15 @@ namespace Daenet.Common.Logging.EventHub
         {
             this.m_EventDataFormatter = eventDataFormatter;
             this.m_AdditionalValues = additionalValues;
-            this.m_Filter = filter;
+            if (filter == null)
+                m_Filter = ((category, logLevel) => true);
+            else
+                m_Filter = filter;
             this.m_Settings = settings;
+        }
+
+        public EventHubLoggerProvider(IOptions<EventHubLoggerSettings> settings) : this(settings.Value)
+        {
         }
 
         public ILogger CreateLogger(string categoryName)

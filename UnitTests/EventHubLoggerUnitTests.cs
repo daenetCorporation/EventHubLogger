@@ -11,12 +11,6 @@ namespace Daenet.Common.Logging.EventHub.UnitTests
     [TestClass]
     public class EventHubLoggerUnitTests
     {
-        [TestMethod]
-        public void TestMethod1()
-        {
-
-        }
-
         private ILogger m_Logger;
 
         public EventHubLoggerUnitTests()
@@ -90,7 +84,7 @@ namespace Daenet.Common.Logging.EventHub.UnitTests
             var configRoot = cfgBuilder.Build();
 
             ILoggerFactory loggerFactory = new LoggerFactory()
-                .AddEventHub(configRoot.GetEventHubLoggerSettings(), filter, eventDataFormatter, additionalValues);
+                .AddEventHub(configRoot.GetSection("Logging").GetEventHubLoggerSettings(), filter, eventDataFormatter, additionalValues);
 
             m_Logger = loggerFactory.CreateLogger<EventHubLoggerUnitTests>();
         }

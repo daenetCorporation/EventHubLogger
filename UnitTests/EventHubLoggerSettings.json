@@ -2,11 +2,15 @@
   "Logging": {
     "IncludeScopes": "true",
     "LogLevel": {
-      "Default": "Debug",
-      "EventHubLoggerUnitTests": "Verbose",
-      "Microsoft": "Information"
+      "Default": "Error"
     },
     "EventHub": {
+      "LogLevel": {
+        "Default": "Warning"
+      }
+    },
+
+    "EventHubSetting": {
       "ConnectionString": "",
       "IncludeExceptionStackTrace": false,
       "RetryPolicy": 0
