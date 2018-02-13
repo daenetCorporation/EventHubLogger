@@ -12,77 +12,49 @@ namespace Daenet.Common.Logging.EventHub
     /// </summary>
     internal class EventHubLogScopeManager
     {
-        internal static readonly AsyncLocal<List<DisposableScope>> m_AsyncSopes = new AsyncLocal<List<DisposableScope>>();
-        private object m_State;
+        private readonly string _name;
+        private readonly object _state;
 
-        internal EventHubLogScopeManager(object state)
+        internal EventHubLogScopeManager(string name, object state)
         {
-            m_AsyncSopes.Value = new List<DisposableScope>();
-            m_State = state;
+            _name = name;
+            _state = state;
         }
 
-        public string Current
+        public EventHubLogScopeManager Parent { get; private set; }
+
+        private static AsyncLocal<EventHubLogScopeManager> _value = new AsyncLocal<EventHubLogScopeManager>();
+        public static EventHubLogScopeManager Current
         {
+            set
+            {
+                _value.Value = value;
+            }
             get
             {
-                if (m_AsyncSopes.Value == null)
-                    m_AsyncSopes.Value = new List<DisposableScope>();
-
-                StringBuilder sb = new StringBuilder(); 
-                foreach (var item in m_AsyncSopes.Value)
-                {
-                    sb.Append($"/{item}");
-                }
-
-                return sb.ToString();
+                return _value.Value;
             }
         }
 
-        public IDisposable Push(object state)
+        public static IDisposable Push(string name, object state)
         {
-            lock ("scope")
-            {
-                var newScope = new DisposableScope(state.ToString(), this);
+            var temp = Current;
+            Current = new EventHubLogScopeManager(name, state);
+            Current.Parent = temp;
 
-                m_AsyncSopes.Value.Add(newScope);
-
-                return newScope;
-            }
+            return new DisposableScope();
         }
 
         public override string ToString()
         {
-            return m_State?.ToString();
+            return _state?.ToString();
         }
 
-        internal class DisposableScope : IDisposable
+        private class DisposableScope : IDisposable
         {
-            private EventHubLogScopeManager m_ScopeMgr;
-            private string m_ScopeName;
-
-            public DisposableScope(string scopeName, EventHubLogScopeManager scopeMgr)
-            {
-                m_ScopeName = scopeName;
-                m_ScopeMgr = scopeMgr;
-            }
-
             public void Dispose()
             {
-                lock ("scope")
-                {
-                    var me = m_AsyncSopes.Value.FirstOrDefault(s => s == this);
-                    if (me == null)
-                    {
-                        throw new InvalidOperationException("This should never happen!");
-                    }
-
-                    m_AsyncSopes.Value.Remove(me);
-                }
-            }
-
-            public override string ToString()
-            {
-                return m_ScopeName;
+                Current = Current.Parent;
             }
         }
     }

@@ -16,20 +16,79 @@ namespace Daenet.Common.Logging.EventHub
     {
         #region Public Methods
 
-   
+        /// <summary>
+        /// Adds a console logger named 'Console' to the factory.
+        /// </summary>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder builder)
+        {
+            builder.Services.AddSingleton<ILoggerProvider, EventHubLoggerProvider>();
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a sql logger named 'SqlServerLogger' to the factory.
+        /// </summary>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
+        /// <param name="configure"></param>
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder builder, Action<EventHubLoggerSettings> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            builder.AddEventHub();
+            builder.Services.Configure(configure);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a Event HubLogger to the Logger factory.
+        /// </summary>
+        /// <param name="loggerFactory">The Logger factory instance.</param>
+        /// <param name="config">The .NET Core Configuration for the logger section.</param>
+        /// <returns></returns>
+        public static ILoggerFactory AddEventHub(this ILoggerFactory loggerFactory, IConfiguration config)
+        {
+            loggerFactory.AddProvider(new EventHubLoggerProvider(config.GetEventHubLoggerSettings(), null));
+            return loggerFactory;
+        }
+
+
+
 
         public static IEventHubLoggerSettings GetEventHubLoggerSettings(this IConfiguration config)
         {
             EventHubLoggerSettings settings = new EventHubLoggerSettings();
 
             settings.IncludeScopes = config.GetValue<bool>("IncludeScopes");
-            config.GetSection("Switches").Bind(settings.Switches);
+//            config.GetSection("Switches").Bind(settings.Switches);
 
-            settings.ConnectionString = config.GetSection("EventHub").GetValue<string>("ConnectionString");
-            settings.IncludeExceptionStackTrace = config.GetSection("EventHub").GetValue<bool>("IncludeExceptionStackTrace");
-            settings.RetryPolicy = getRetryPolicy(config.GetSection("EventHub").GetValue<int>("RetryPolicy"));
+            settings.ConnectionString = config.GetSection("EventHubSetting").GetValue<string>("ConnectionString");
+            settings.IncludeExceptionStackTrace = config.GetSection("EventHubSetting").GetValue<bool>("IncludeExceptionStackTrace");
+            settings.RetryPolicy = getRetryPolicy(config.GetSection("EventHubSetting").GetValue<int>("RetryPolicy"));
 
             return settings;
+        }
+
+        /// <summary>
+        /// Set settings from configuration.
+        /// </summary>
+        /// <param name="config">Configuration for SQL Server Logging.</param>
+        /// <returns></returns>
+        public static void SetEventHubLoggerSettings(this EventHubLoggerSettings settings, IConfiguration config)
+        {
+            if (settings == null)
+                settings = new EventHubLoggerSettings();
+
+            settings.IncludeScopes = config.GetValue<bool>("IncludeScopes");
+            //            config.GetSection("Switches").Bind(settings.Switches);
+
+            settings.ConnectionString = config.GetSection("EventHubSetting").GetValue<string>("ConnectionString");
+            settings.IncludeExceptionStackTrace = config.GetSection("EventHubSetting").GetValue<bool>("IncludeExceptionStackTrace");
+            settings.RetryPolicy = getRetryPolicy(config.GetSection("EventHubSetting").GetValue<int>("RetryPolicy"));
         }
 
 
@@ -101,7 +160,6 @@ namespace Daenet.Common.Logging.EventHub
         /// <param name="loggingBuilder"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-
         public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, IEventHubLoggerSettings settings)
         {
             if (settings == null)
@@ -113,28 +171,6 @@ namespace Daenet.Common.Logging.EventHub
 
             return loggingBuilder;
         }
-
-
-
-        /// <summary>
-        /// Adds the logger to the factory.
-        /// </summary>
-        /// <param name="loggingBuilder"></param>
-        /// <param name="configure"></param>
-        /// <returns></returns>
-
-        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<IEventHubLoggerSettings> configure)
-        {
-            if (configure == null)
-            {
-                throw new ArgumentNullException(nameof(configure));
-            }
-           
-            loggingBuilder.Services.AddSingleton<ILoggerProvider, EventHubLoggerProvider>();
-           
-            return loggingBuilder;
-        }
-
 
        
         /// <summary>

@@ -21,7 +21,6 @@ namespace Daenet.Common.Logging.EventHub
         private string m_CategoryName;
 
         private EventHubClient m_EventHubClient;
-        private EventHubLogScopeManager m_ScopeManager;
 
         /// <summary>
         /// List of key value pairs, which will be logged with every message.
@@ -86,15 +85,9 @@ namespace Daenet.Common.Logging.EventHub
                 throw new ArgumentNullException(nameof(state));
             }
 
-            if (m_ScopeManager == null)
-            {
-                m_ScopeManager = new EventHubLogScopeManager(state);
-            }
-
-            var scope = m_ScopeManager.Push(state);
-
-            return scope;
+            return EventHubLogScopeManager.Push("EventHubLogger", state);
         }
+    
 
         public bool IsEnabled(LogLevel logLevel)
         {
@@ -119,7 +112,7 @@ namespace Daenet.Common.Logging.EventHub
             var data = (System.Collections.Generic.IDictionary<String, Object>)expando;
 
             data.Add("Name", m_CategoryName);
-            data.Add("Scope", m_ScopeManager == null ? null : m_ScopeManager.Current);
+            data.Add("Scope", getScopeInformation());
             data.Add("EventId", eventId.ToString());
             data.Add("Message", state.ToString());
             data.Add("Level", logLevel);
@@ -158,5 +151,29 @@ namespace Daenet.Common.Logging.EventHub
         }
 
         #endregion
+
+        private string getScopeInformation()
+        {
+            StringBuilder builder = new StringBuilder();
+            var current = EventHubLogScopeManager.Current;
+            string scopeLog = string.Empty;
+            var length = builder.Length;
+
+            while (current != null)
+            {
+                if (length == builder.Length)
+                {
+                    scopeLog = $"=> {current}";
+                }
+                else
+                {
+                    scopeLog = $"=> {current} ";
+                }
+
+                builder.Insert(length, scopeLog);
+                current = current.Parent;
+            }
+            return builder.ToString();
+        }
     }
 }
