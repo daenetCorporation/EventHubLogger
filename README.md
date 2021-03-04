@@ -40,7 +40,8 @@ Install-Package Daenet.Common.Logging.EventHub
   }
 }
 ```
-Your log output from sent Events would look like:
+The message logged to EventHub will look like:
+
  ```JSON
  "body": {
       "Name": "Daenet.Common.EventHubLogger.UnitTests.EventHubLoggerUnitTests",
